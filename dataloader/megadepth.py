@@ -15,11 +15,14 @@ rand = np.random.RandomState(234)
 
 
 class MegaDepthLoader():
-    def __init__(self, args):
+    def __init__(self, args, phase="train"):
         self.args = args
-        self.dataset = MegaDepth(args)
-        self.data_loader = torch.utils.data.DataLoader(self.dataset, batch_size=args.batch_size, shuffle=False,
-                                                       num_workers=args.workers, collate_fn=self.my_collate)
+        self.dataset = MegaDepth(args, phase)
+        self.data_loader = torch.utils.data.DataLoader(self.dataset,
+                                                       batch_size=args.batch_size,
+                                                       shuffle=False,
+                                                       num_workers=args.workers,
+                                                       collate_fn=self.my_collate)
 
     def my_collate(self, batch):
         ''' Puts each data field into a tensor with outer dimension batch size '''
@@ -37,9 +40,10 @@ class MegaDepthLoader():
 
 
 class MegaDepth(Dataset):
-    def __init__(self, args):
+    def __init__(self, args, phase):
         self.args = args
-        if args.phase == 'train':
+        self.phase = phase
+        if self.phase == 'train':
             # augment during training
             self.transform = transforms.Compose([transforms.ToPILImage(),
                                                  transforms.ColorJitter
@@ -53,7 +57,6 @@ class MegaDepth(Dataset):
                                                  transforms.Normalize(mean=(0.485, 0.456, 0.406),
                                                                       std=(0.229, 0.224, 0.225)),
                                                  ])
-        self.phase = args.phase
         self.root = os.path.join(args.datadir, self.phase)
         self.images = self.read_img_cam()
         self.imf1s, self.imf2s = self.read_pairs()
