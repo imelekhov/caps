@@ -67,6 +67,16 @@ class CAPSModel():
             coord2_e, std = self.model.test(self.im1, self.im2, self.coord1)
         return coord2_e, std
 
+    def validate(self):
+        self.model.eval()
+        with torch.no_grad():
+            self.forward()
+            loss = self.criterion(self.coord1, self.out, self.fmatrix, self.pose, self.imsize)
+            loss_total, _, _, _, _, _ = loss
+
+        self.model.train(True)
+        return loss_total.item()
+
     def extract_features(self, im, coord):
         self.model.eval()
         with torch.no_grad():
