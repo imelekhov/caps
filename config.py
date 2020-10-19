@@ -7,6 +7,9 @@ def get_args():
 
     ## path options
     parser.add_argument('--datadir', type=str, help='the dataset directory')
+    parser.add_argument('--styledir', type=str,
+                        default="/data/datasets/style_transfer_amos/styles_sub_10/night",
+                        help='')
     parser.add_argument("--logdir", type=str, default='./logs/', help='dir of tensorboard logs')
     parser.add_argument("--outdir", type=str, default='./out/', help='dir of output e.g., ckpts')
     parser.add_argument("--ckpt_path", type=str, default="",
@@ -52,6 +55,7 @@ def get_args():
     parser.add_argument('--window_size', type=float, default=0.125,
                         help='the size of the window, w.r.t image width at the fine level')
     parser.add_argument('--use_nn', type=int, default=1, help='if use nearest neighbor in the coarse level')
+    parser.add_argument('--use_stylization', type=int, default=1, help='use stylized images')
 
     ## loss function options
     parser.add_argument('--std', type=int, default=1, help='reweight loss using the standard deviation')
