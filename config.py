@@ -16,7 +16,7 @@ def get_args():
     ## general options
     parser.add_argument("--exp_name", type=str, help='experiment name')
     parser.add_argument('--n_iters', type=int, default=200000, help='max number of training iterations')
-    parser.add_argument('--phase', type=str, default='train', help='train/val/test')
+    # parser.add_argument('--phase', type=str, default='train', help='train/val/test')
 
     # data options
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)

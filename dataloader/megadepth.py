@@ -42,6 +42,10 @@ class MegaDepthLoader():
 class MegaDepth(Dataset):
     def __init__(self, args, phase):
         self.args = args
+
+        self.n_imgs = {"train": 2000,
+                       "test": 500}
+
         self.phase = phase
         if self.phase == 'train':
             # augment during training
@@ -117,11 +121,11 @@ class MegaDepth(Dataset):
                         imf2s_.append(os.path.join(folder, 'images', imf2))
 
                 # make # image pairs per scene more balanced
-                if len(imf1s_) > 5000:
+                if len(imf1s_) > self.n_imgs[self.phase]:
                     index = np.arange(len(imf1s_))
                     rand.shuffle(index)
-                    imf1s_ = list(np.array(imf1s_)[index[:5000]])
-                    imf2s_ = list(np.array(imf2s_)[index[:5000]])
+                    imf1s_ = list(np.array(imf1s_)[index[:self.n_imgs[self.phase]]])
+                    imf2s_ = list(np.array(imf2s_)[index[:self.n_imgs[self.phase]]])
 
                 imf1s.extend(imf1s_)
                 imf2s.extend(imf2s_)
@@ -179,8 +183,13 @@ class MegaDepth(Dataset):
 
         # prune query keypoints that are not likely to have correspondence in the other image
         if self.args.prune_kp:
-            ind_intersect = data_utils.prune_kpts(coord1, F_gt, im2.shape[:2], intrinsic1, intrinsic2,
-                                                  relative, d_min=4, d_max=400)
+            ind_intersect = data_utils.prune_kpts(coord1,
+                                                  F_gt,
+                                                  im2.shape[:2],
+                                                  intrinsic1,
+                                                  intrinsic2,
+                                                  relative,
+                                                  d_min=4, d_max=400)
             if np.sum(ind_intersect) == 0:
                 return None
             coord1 = coord1[ind_intersect]
