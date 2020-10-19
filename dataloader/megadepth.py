@@ -22,6 +22,7 @@ class MegaDepthLoader():
                                                        batch_size=args.batch_size,
                                                        shuffle=False,
                                                        num_workers=args.workers,
+                                                       pin_memory=True,
                                                        collate_fn=self.my_collate)
 
     def my_collate(self, batch):

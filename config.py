@@ -15,7 +15,8 @@ def get_args():
 
     ## general options
     parser.add_argument("--exp_name", type=str, help='experiment name')
-    parser.add_argument('--n_iters', type=int, default=200000, help='max number of training iterations')
+    # parser.add_argument('--n_iters', type=int, default=200000, help='max number of training iterations')
+    parser.add_argument('--n_iters', type=int, default=800000, help='max number of training iterations')
     # parser.add_argument('--phase', type=str, default='train', help='train/val/test')
 
     # data options
@@ -27,7 +28,11 @@ def get_args():
     # training options
     parser.add_argument('--batch_size', type=int, default=5, help='input batch size')
     parser.add_argument('--lr', type=float, default=1e-4, help='base learning rate')
-    parser.add_argument("--lrate_decay_steps", type=int, default=80000,
+    #parser.add_argument("--lrate_decay_steps", type=int, default=80000,
+    #                    help='decay learning rate by a factor every specified number of steps')
+    parser.add_argument("--lrate_decay_steps",
+                        type=int,
+                        default=100000,
                         help='decay learning rate by a factor every specified number of steps')
     parser.add_argument("--lrate_decay_factor", type=float, default=0.5,
                         help='decay learning rate by a factor every specified number of steps')
@@ -65,7 +70,7 @@ def get_args():
     ## logging options
     parser.add_argument('--log_scalar_interval', type=int, default=20, help='print interval')
     parser.add_argument('--log_img_interval', type=int, default=500, help='log image interval')
-    parser.add_argument("--save_interval", type=int, default=10000, help='frequency of weight ckpt saving')
+    parser.add_argument("--save_interval", type=int, default=20000, help='frequency of weight ckpt saving')
 
     ## eval options
     parser.add_argument('--extract_img_dir', type=str, help='the directory of images to extract features')

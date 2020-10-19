@@ -5,6 +5,9 @@ from CAPS.caps_model import CAPSModel
 from dataloader.megadepth import MegaDepthLoader
 from utils import cycle
 from tqdm import tqdm
+import torch
+
+torch.backends.cudnn.benchmarks = True
 
 
 def train_megadepth(args):
@@ -24,6 +27,8 @@ def train_megadepth(args):
 
     # megadepth data loader
     train_loader = MegaDepthLoader(args).load_data()
+    print(len(train_loader))
+
     test_loader = MegaDepthLoader(args, "test").load_data()
 
     train_loader_iterator = iter(cycle(train_loader))
@@ -50,6 +55,7 @@ def train_megadepth(args):
             if val_loss < val_total_loss:
                 model.save_model(step)
                 val_total_loss = val_loss
+                print("%s | Step: %d, Loss: %2.5f" % ("val_caps", step, val_total_loss))
 
 
 if __name__ == '__main__':

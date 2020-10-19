@@ -32,12 +32,12 @@ class CAPSModel():
         self.criterion = CtoFCriterion(args).to(self.device)
 
     def set_input(self, data):
-        self.im1 = Variable(data['im1'].to(self.device))
-        self.im2 = Variable(data['im2'].to(self.device))
+        self.im1 = data['im1'].to(self.device)
+        self.im2 = data['im2'].to(self.device)
 
-        self.coord1 = Variable(data['coord1'].to(self.device))
+        self.coord1 = data['coord1'].to(self.device)
         self.fmatrix = data['F'].cuda()
-        self.pose = Variable(data['pose'].to(self.device))
+        self.pose = data['pose'].to(self.device)
         self.intrinsic1 = data['intrinsic1'].to(self.device)
         self.intrinsic2 = data['intrinsic2'].to(self.device)
 
@@ -84,10 +84,9 @@ class CAPSModel():
         return feat_c, feat_f
 
     def write_summary(self, writer, n_iter):
-        print("%s | Step: %d, Loss: %2.5f" % (self.args.exp_name, n_iter, self.j_loss.item()))
-
         # write scalar
         if n_iter % self.args.log_scalar_interval == 0:
+            print("%s | Step: %d, Loss: %2.5f" % (self.args.exp_name, n_iter, self.j_loss.item()))
             writer.add_scalar('Total_loss', self.j_loss.item(), n_iter)
             writer.add_scalar('epipolar_loss_coarse', self.eloss_c.item(), n_iter)
             writer.add_scalar('epipolar_loss_fine', self.eloss_f.item(), n_iter)
