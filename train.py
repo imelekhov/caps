@@ -4,6 +4,10 @@ from tensorboardX import SummaryWriter
 from CAPS.caps_model import CAPSModel
 from dataloader.megadepth import MegaDepthLoader
 from utils import cycle
+from tqdm import tqdm
+import torch
+
+torch.backends.cudnn.benchmarks = True
 
 
 def train_megadepth(args):
@@ -23,6 +27,10 @@ def train_megadepth(args):
 
     # megadepth data loader
     train_loader = MegaDepthLoader(args).load_data()
+    print(len(train_loader))
+
+    test_loader = MegaDepthLoader(args, "test").load_data()
+
     train_loader_iterator = iter(cycle(train_loader))
 
     # define model
@@ -30,19 +38,26 @@ def train_megadepth(args):
     start_step = model.start_step
 
     # training loop
+    val_total_loss = 1e6
     for step in range(start_step + 1, start_step + args.n_iters + 1):
         data = next(train_loader_iterator)
         model.set_input(data)
         model.optimize_parameters()
         model.write_summary(writer, step)
+
         if step % args.save_interval == 0 and step > 0:
-            model.save_model(step)
+            val_loss = 0.
+            for test_sample in tqdm(test_loader):
+                model.set_input(test_sample)
+                val_loss += model.validate()
+            val_loss /= len(test_loader)
+
+            if val_loss < val_total_loss:
+                model.save_model(step)
+                val_total_loss = val_loss
+                print("%s | Step: %d, Loss: %2.5f" % ("val_caps", step, val_total_loss))
 
 
 if __name__ == '__main__':
     args = config.get_args()
     train_megadepth(args)
-
-
-
-

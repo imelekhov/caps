@@ -15,11 +15,15 @@ rand = np.random.RandomState(234)
 
 
 class MegaDepthLoader():
-    def __init__(self, args):
+    def __init__(self, args, phase="train"):
         self.args = args
-        self.dataset = MegaDepth(args)
-        self.data_loader = torch.utils.data.DataLoader(self.dataset, batch_size=args.batch_size, shuffle=False,
-                                                       num_workers=args.workers, collate_fn=self.my_collate)
+        self.dataset = MegaDepth(args, phase)
+        self.data_loader = torch.utils.data.DataLoader(self.dataset,
+                                                       batch_size=args.batch_size,
+                                                       shuffle=False,
+                                                       num_workers=args.workers,
+                                                       pin_memory=True,
+                                                       collate_fn=self.my_collate)
 
     def my_collate(self, batch):
         ''' Puts each data field into a tensor with outer dimension batch size '''
@@ -37,9 +41,14 @@ class MegaDepthLoader():
 
 
 class MegaDepth(Dataset):
-    def __init__(self, args):
+    def __init__(self, args, phase):
         self.args = args
-        if args.phase == 'train':
+
+        self.n_imgs = {"train": 2000,
+                       "test": 500}
+
+        self.phase = phase
+        if self.phase == 'train':
             # augment during training
             self.transform = transforms.Compose([transforms.ToPILImage(),
                                                  transforms.ColorJitter
@@ -53,7 +62,6 @@ class MegaDepth(Dataset):
                                                  transforms.Normalize(mean=(0.485, 0.456, 0.406),
                                                                       std=(0.229, 0.224, 0.225)),
                                                  ])
-        self.phase = args.phase
         self.root = os.path.join(args.datadir, self.phase)
         self.images = self.read_img_cam()
         self.imf1s, self.imf2s = self.read_pairs()
@@ -114,11 +122,11 @@ class MegaDepth(Dataset):
                         imf2s_.append(os.path.join(folder, 'images', imf2))
 
                 # make # image pairs per scene more balanced
-                if len(imf1s_) > 5000:
+                if len(imf1s_) > self.n_imgs[self.phase]:
                     index = np.arange(len(imf1s_))
                     rand.shuffle(index)
-                    imf1s_ = list(np.array(imf1s_)[index[:5000]])
-                    imf2s_ = list(np.array(imf2s_)[index[:5000]])
+                    imf1s_ = list(np.array(imf1s_)[index[:self.n_imgs[self.phase]]])
+                    imf2s_ = list(np.array(imf2s_)[index[:self.n_imgs[self.phase]]])
 
                 imf1s.extend(imf1s_)
                 imf2s.extend(imf2s_)
@@ -176,8 +184,13 @@ class MegaDepth(Dataset):
 
         # prune query keypoints that are not likely to have correspondence in the other image
         if self.args.prune_kp:
-            ind_intersect = data_utils.prune_kpts(coord1, F_gt, im2.shape[:2], intrinsic1, intrinsic2,
-                                                  relative, d_min=4, d_max=400)
+            ind_intersect = data_utils.prune_kpts(coord1,
+                                                  F_gt,
+                                                  im2.shape[:2],
+                                                  intrinsic1,
+                                                  intrinsic2,
+                                                  relative,
+                                                  d_min=4, d_max=400)
             if np.sum(ind_intersect) == 0:
                 return None
             coord1 = coord1[ind_intersect]
