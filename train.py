@@ -46,6 +46,7 @@ def train_megadepth(args):
         model.write_summary(writer, step)
 
         if step % args.save_interval == 0 and step > 0:
+            '''
             val_loss = 0.
             for test_sample in tqdm(test_loader):
                 model.set_input(test_sample)
@@ -56,7 +57,8 @@ def train_megadepth(args):
                 model.save_model(step)
                 val_total_loss = val_loss
                 print("%s | Step: %d, Loss: %2.5f" % ("val_caps", step, val_total_loss))
-
+            '''
+            model.save_model(step)
 
 if __name__ == '__main__':
     args = config.get_args()
