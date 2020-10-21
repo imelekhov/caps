@@ -9,7 +9,9 @@ def get_args():
     parser.add_argument('--datadir', type=str, help='the dataset directory')
     parser.add_argument("--logdir", type=str, default='./logs/', help='dir of tensorboard logs')
     parser.add_argument("--outdir", type=str, default='./out/', help='dir of output e.g., ckpts')
-    parser.add_argument("--ckpt_path", type=str, default="",
+    parser.add_argument("--ckpt_path",
+                        type=str,
+                        default="caps-pretrained.pth",
                         help='specific checkpoint path to load the model from, '
                              'if not specified, automatically reload from most recent checkpoints')
 
@@ -73,8 +75,14 @@ def get_args():
     parser.add_argument("--save_interval", type=int, default=20000, help='frequency of weight ckpt saving')
 
     ## eval options
-    parser.add_argument('--extract_img_dir', type=str, help='the directory of images to extract features')
-    parser.add_argument('--extract_out_dir', type=str, help='the directory of images to extract features')
+    parser.add_argument('--extract_img_dir',
+                        type=str,
+                        default="/data/datasets/hpatches-sequences-release-light",
+                        help='the directory of images to extract features')
+    parser.add_argument('--extract_out_dir',
+                        type=str,
+                        default="./out_eval/orig",
+                        help='the directory of images to extract features')
 
     args = parser.parse_known_args()[0]
 
