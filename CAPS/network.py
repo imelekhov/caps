@@ -13,6 +13,9 @@ class CAPSNet(nn.Module):
                            encoder=args.backbone,
                            coarse_out_ch=args.coarse_feat_dim,
                            fine_out_ch=args.fine_feat_dim).to(self.device)
+        if args.multi_gpu:
+            print("Use multiple GPUs")
+            self.net = nn.DataParallel(self.net)
 
     @staticmethod
     def normalize(coord, h, w):

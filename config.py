@@ -7,19 +7,20 @@ def get_args():
 
     ## path options
     parser.add_argument('--datadir', type=str, help='the dataset directory')
+    parser.add_argument('--styledir', type=str,
+                        default="/data/datasets/style_transfer_amos/styles_sub_10/night",
+                        help='')
     parser.add_argument("--logdir", type=str, default='./logs/', help='dir of tensorboard logs')
     parser.add_argument("--outdir", type=str, default='./out/', help='dir of output e.g., ckpts')
     parser.add_argument("--ckpt_path",
                         type=str,
-                        default="caps-pretrained.pth",
+                        default="",
                         help='specific checkpoint path to load the model from, '
                              'if not specified, automatically reload from most recent checkpoints')
 
     ## general options
-    parser.add_argument("--exp_name", type=str, help='experiment name')
-    # parser.add_argument('--n_iters', type=int, default=200000, help='max number of training iterations')
-    parser.add_argument('--n_iters', type=int, default=800000, help='max number of training iterations')
-    # parser.add_argument('--phase', type=str, default='train', help='train/val/test')
+    parser.add_argument("--exp_name", type=str, default="exp_name", help='experiment name')
+    parser.add_argument('--n_iters', type=int, default=280000, help='max number of training iterations')
 
     # data options
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
@@ -28,13 +29,12 @@ def get_args():
     parser.add_argument('--prune_kp', type=int, default=1, help='if prune non-matchable keypoints')
 
     # training options
-    parser.add_argument('--batch_size', type=int, default=5, help='input batch size')
+    parser.add_argument('--multi_gpu', type=int, default=1, help='use multiple gpus')
+    parser.add_argument('--batch_size', type=int, default=8, help='input batch size')
     parser.add_argument('--lr', type=float, default=1e-4, help='base learning rate')
-    #parser.add_argument("--lrate_decay_steps", type=int, default=80000,
-    #                    help='decay learning rate by a factor every specified number of steps')
     parser.add_argument("--lrate_decay_steps",
                         type=int,
-                        default=100000,
+                        default=50000,
                         help='decay learning rate by a factor every specified number of steps')
     parser.add_argument("--lrate_decay_factor", type=float, default=0.5,
                         help='decay learning rate by a factor every specified number of steps')
@@ -54,6 +54,7 @@ def get_args():
     parser.add_argument('--window_size', type=float, default=0.125,
                         help='the size of the window, w.r.t image width at the fine level')
     parser.add_argument('--use_nn', type=int, default=1, help='if use nearest neighbor in the coarse level')
+    parser.add_argument('--use_stylization', type=int, default=1, help='use stylized images')
 
     ## loss function options
     parser.add_argument('--std', type=int, default=1, help='reweight loss using the standard deviation')

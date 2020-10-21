@@ -6,6 +6,7 @@ from dataloader.megadepth import MegaDepthLoader
 from utils import cycle
 from tqdm import tqdm
 import torch
+import torch.nn as nn
 
 torch.backends.cudnn.benchmarks = True
 
