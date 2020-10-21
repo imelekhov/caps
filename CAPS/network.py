@@ -17,6 +17,9 @@ class CAPSNet(nn.Module):
             print("Use multiple GPUs")
             self.net = nn.DataParallel(self.net)
 
+    def get_network(self):
+        return self.net
+
     @staticmethod
     def normalize(coord, h, w):
         '''

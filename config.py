@@ -5,7 +5,7 @@ def get_args():
     parser = configargparse.ArgParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
     parser.add_argument('--config', is_config_file=True, help='config file path')
 
-    ## path options
+    ## path options ./out/multi_gpu/000020.pth
     parser.add_argument('--datadir', type=str, help='the dataset directory')
     parser.add_argument('--styledir', type=str,
                         default="/data/datasets/style_transfer_amos/styles_sub_10/night",
@@ -19,7 +19,7 @@ def get_args():
                              'if not specified, automatically reload from most recent checkpoints')
 
     ## general options
-    parser.add_argument("--exp_name", type=str, default="exp_name", help='experiment name')
+    parser.add_argument("--exp_name", type=str, default="multi_gpu", help='experiment name')
     parser.add_argument('--n_iters', type=int, default=280000, help='max number of training iterations')
 
     # data options
@@ -54,7 +54,7 @@ def get_args():
     parser.add_argument('--window_size', type=float, default=0.125,
                         help='the size of the window, w.r.t image width at the fine level')
     parser.add_argument('--use_nn', type=int, default=1, help='if use nearest neighbor in the coarse level')
-    parser.add_argument('--use_stylization', type=int, default=1, help='use stylized images')
+    parser.add_argument('--use_stylization', type=int, default=0, help='use stylized images')
 
     ## loss function options
     parser.add_argument('--std', type=int, default=1, help='reweight loss using the standard deviation')
@@ -71,7 +71,7 @@ def get_args():
                              'do not add the epipolar loss')
 
     ## logging options
-    parser.add_argument('--log_scalar_interval', type=int, default=20, help='print interval')
+    parser.add_argument('--log_scalar_interval', type=int, default=50, help='print interval')
     parser.add_argument('--log_img_interval', type=int, default=500, help='log image interval')
     parser.add_argument("--save_interval", type=int, default=20000, help='frequency of weight ckpt saving')
 
@@ -82,7 +82,7 @@ def get_args():
                         help='the directory of images to extract features')
     parser.add_argument('--extract_out_dir',
                         type=str,
-                        default="./out_eval/orig",
+                        default="./out_eval/orig_multi_gpu",
                         help='the directory of images to extract features')
 
     args = parser.parse_known_args()[0]
