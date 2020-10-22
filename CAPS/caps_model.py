@@ -115,7 +115,7 @@ class CAPSModel():
 
     def load_model(self, filename):
         to_load = torch.load(filename)
-        self.model.load_state_dict(to_load['state_dict'])
+        self.model.get_network().load_state_dict(to_load['state_dict'])
         if 'optimizer' in to_load.keys():
             self.optimizer.load_state_dict(to_load['optimizer'])
         if 'scheduler' in to_load.keys():
@@ -159,7 +159,7 @@ class CAPSModel():
         save_path = os.path.join(ckpt_folder, "{:06d}.pth".format(step))
         print('saving ckpts {}...'.format(save_path))
         torch.save({'step': step,
-                    'state_dict': self.model.state_dict(),
+                    'state_dict': self.model.get_network().module.state_dict() if self.args.multi_gpu else self.model.get_network(),
                     'optimizer':  self.optimizer.state_dict(),
                     'scheduler': self.scheduler.state_dict(),
                     },

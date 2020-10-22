@@ -5,19 +5,22 @@ def get_args():
     parser = configargparse.ArgParser(config_file_parser_class=configargparse.YAMLConfigFileParser)
     parser.add_argument('--config', is_config_file=True, help='config file path')
 
-    ## path options
+    ## path options ./out/multi_gpu/000020.pth
     parser.add_argument('--datadir', type=str, help='the dataset directory')
+    parser.add_argument('--styledir', type=str,
+                        default="/data/datasets/style_transfer_amos/styles_sub_10/night",
+                        help='')
     parser.add_argument("--logdir", type=str, default='./logs/', help='dir of tensorboard logs')
     parser.add_argument("--outdir", type=str, default='./out/', help='dir of output e.g., ckpts')
-    parser.add_argument("--ckpt_path", type=str, default="",
+    parser.add_argument("--ckpt_path",
+                        type=str,
+                        default="",
                         help='specific checkpoint path to load the model from, '
                              'if not specified, automatically reload from most recent checkpoints')
 
     ## general options
-    parser.add_argument("--exp_name", type=str, help='experiment name')
-    # parser.add_argument('--n_iters', type=int, default=200000, help='max number of training iterations')
-    parser.add_argument('--n_iters', type=int, default=800000, help='max number of training iterations')
-    # parser.add_argument('--phase', type=str, default='train', help='train/val/test')
+    parser.add_argument("--exp_name", type=str, default="multi_gpu", help='experiment name')
+    parser.add_argument('--n_iters', type=int, default=280000, help='max number of training iterations')
 
     # data options
     parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
@@ -27,16 +30,19 @@ def get_args():
 
     # training options
 <<<<<<< HEAD
+<<<<<<< HEAD
     parser.add_argument('--batch_size', type=int, default=4, help='input batch size')
 =======
     parser.add_argument('--batch_size', type=int, default=5, help='input batch size')
 >>>>>>> 6c5324039707e58eed300cb98cb2246fcee55705
+=======
+    parser.add_argument('--multi_gpu', type=int, default=1, help='use multiple gpus')
+    parser.add_argument('--batch_size', type=int, default=8, help='input batch size')
+>>>>>>> 2ae0dba4fe604c52adc2db8d1989e9217d51b83e
     parser.add_argument('--lr', type=float, default=1e-4, help='base learning rate')
-    #parser.add_argument("--lrate_decay_steps", type=int, default=80000,
-    #                    help='decay learning rate by a factor every specified number of steps')
     parser.add_argument("--lrate_decay_steps",
                         type=int,
-                        default=100000,
+                        default=50000,
                         help='decay learning rate by a factor every specified number of steps')
     parser.add_argument("--lrate_decay_factor", type=float, default=0.5,
                         help='decay learning rate by a factor every specified number of steps')
@@ -56,6 +62,7 @@ def get_args():
     parser.add_argument('--window_size', type=float, default=0.125,
                         help='the size of the window, w.r.t image width at the fine level')
     parser.add_argument('--use_nn', type=int, default=1, help='if use nearest neighbor in the coarse level')
+    parser.add_argument('--use_stylization', type=int, default=0, help='use stylized images')
 
     ## loss function options
     parser.add_argument('--std', type=int, default=1, help='reweight loss using the standard deviation')
@@ -72,13 +79,19 @@ def get_args():
                              'do not add the epipolar loss')
 
     ## logging options
-    parser.add_argument('--log_scalar_interval', type=int, default=20, help='print interval')
+    parser.add_argument('--log_scalar_interval', type=int, default=50, help='print interval')
     parser.add_argument('--log_img_interval', type=int, default=500, help='log image interval')
     parser.add_argument("--save_interval", type=int, default=20000, help='frequency of weight ckpt saving')
 
     ## eval options
-    parser.add_argument('--extract_img_dir', type=str, help='the directory of images to extract features')
-    parser.add_argument('--extract_out_dir', type=str, help='the directory of images to extract features')
+    parser.add_argument('--extract_img_dir',
+                        type=str,
+                        default="/data/datasets/hpatches-sequences-release-light",
+                        help='the directory of images to extract features')
+    parser.add_argument('--extract_out_dir',
+                        type=str,
+                        default="./out_eval/orig_multi_gpu",
+                        help='the directory of images to extract features')
 
     args = parser.parse_known_args()[0]
 
