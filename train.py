@@ -3,7 +3,7 @@ import config
 from tensorboardX import SummaryWriter
 from CAPS.caps_model import CAPSModel
 from dataloader.megadepth import MegaDepthLoader
-from utils import cycle
+# from utils import cycle
 from tqdm import tqdm
 import torch
 import torch.nn as nn
@@ -32,12 +32,40 @@ def train_megadepth(args):
 
     test_loader = MegaDepthLoader(args, "test").load_data()
 
-    train_loader_iterator = iter(cycle(train_loader))
+    # train_loader_iterator = iter(cycle(train_loader))
 
     # define model
     model = CAPSModel(args)
-    start_step = model.start_step
+    # start_step = model.start_step
 
+    # training loop
+    val_total_loss = 1e6
+    total_n_iters = 0
+    #while True:
+    for batch_id, data in enumerate(train_loader):
+        total_n_iters += 1
+        model.set_input(data)
+        model.optimize_parameters()
+        model.write_summary(writer, total_n_iters)
+        if total_n_iters % args.save_interval == 0 and total_n_iters > 0:
+            val_loss = 0.
+            for test_sample in tqdm(test_loader):
+                model.set_input(test_sample)
+                val_loss += model.validate()
+            val_loss /= len(test_loader)
+
+            if val_loss < val_total_loss:
+                model.save_model(total_n_iters, True)
+                val_total_loss = val_loss
+                print("BEST on valid.: %s | Step: %d, Loss: %2.5f" % ("val_caps", total_n_iters, val_total_loss))
+            else:
+                model.save_model(total_n_iters)
+                print("%s | Step: %d, Loss: %2.5f" % ("val_caps", total_n_iters, val_total_loss))
+
+        if total_n_iters == args.n_iters:
+            break
+
+    '''
     # training loop
     val_total_loss = 1e6
     for step in range(start_step + 1, start_step + args.n_iters + 1):
@@ -57,6 +85,7 @@ def train_megadepth(args):
                 model.save_model(step)
                 val_total_loss = val_loss
                 print("%s | Step: %d, Loss: %2.5f" % ("val_caps", step, val_total_loss))
+    '''
 
 
 if __name__ == '__main__':

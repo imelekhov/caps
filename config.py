@@ -23,7 +23,7 @@ def get_args():
     parser.add_argument('--n_iters', type=int, default=280000, help='max number of training iterations')
 
     # data options
-    parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
+    parser.add_argument('--workers', type=int, help='number of data loading workers', default=8)
     parser.add_argument('--num_pts', type=int, default=500, help='num of points trained in each pair')
     parser.add_argument('--train_kp', type=str, default='mixed', help='sift/random/mixed')
     parser.add_argument('--prune_kp', type=int, default=1, help='if prune non-matchable keypoints')
@@ -54,7 +54,7 @@ def get_args():
     parser.add_argument('--window_size', type=float, default=0.125,
                         help='the size of the window, w.r.t image width at the fine level')
     parser.add_argument('--use_nn', type=int, default=1, help='if use nearest neighbor in the coarse level')
-    parser.add_argument('--use_stylization', type=int, default=0, help='use stylized images')
+    parser.add_argument('--use_stylization', type=int, default=1, help='use stylized images')
 
     ## loss function options
     parser.add_argument('--std', type=int, default=1, help='reweight loss using the standard deviation')

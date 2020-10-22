@@ -2,12 +2,12 @@ import numpy as np
 import scipy
 import cv2
 
-
+'''
 def cycle(iterable):
     while True:
         for x in iterable:
             yield x
-
+'''
 
 def evaluate_pose(E, P):
     R_gt = P[:3, :3]

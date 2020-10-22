@@ -161,10 +161,7 @@ class MegaDepth(Dataset):
         im2 = io.imread(imf2)
         if self.args.use_stylization:
             if np.random.randint(2, size=1)[0]:
-                print("Let's stylized the second image")
-                print("orig.: ", im2.shape)
-                im2 = self.stylizer.forward(imf2)
-                print("stylized: ", im2.shape)
+                im2 = np.asarray(self.stylizer.forward(imf2)).copy()
 
         h, w = im1.shape[:2]
 

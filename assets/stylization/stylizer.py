@@ -17,9 +17,11 @@ class Stylizer(object):
         self.dir_path = osp.dirname(osp.realpath(__file__))
         self.p_wct.load_state_dict(torch.load(osp.join(self.dir_path, "photo_wct.pth")))
 
+        '''
         if sargs.multi_gpu:
             print("Use multiple GPUs")
             self.p_wct = nn.DataParallel(self.p_wct)
+        '''
 
         self.p_pro = GIFSmoothing(r=35, eps=0.001)
         self.p_wct.to(device)

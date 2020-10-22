@@ -152,11 +152,14 @@ class CAPSModel():
 
         return step
 
-    def save_model(self, step):
+    def save_model(self, step, best_val=False):
         ckpt_folder = os.path.join(self.args.outdir, self.args.exp_name)
         os.makedirs(ckpt_folder, exist_ok=True)
 
         save_path = os.path.join(ckpt_folder, "{:06d}.pth".format(step))
+        if best_val:
+            save_path = os.path.join(ckpt_folder, "best_valid.pth")
+
         print('saving ckpts {}...'.format(save_path))
         model_state = self.model.get_network().module.state_dict() if self.args.multi_gpu else self.model.get_network()
         torch.save({'step': step,
