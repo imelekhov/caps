@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 import torch
 import torch.nn as nn
-from models import VGGEncoder, VGGDecoder
+from assets.stylization.models import VGGEncoder, VGGDecoder
 
 
 class PhotoWCT(nn.Module):
@@ -21,6 +21,8 @@ class PhotoWCT(nn.Module):
         self.d3 = VGGDecoder(3)
         self.e4 = VGGEncoder(4)
         self.d4 = VGGDecoder(4)
+
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     
     def transform(self, cont_img, styl_img, cont_seg, styl_seg):
         self.__compute_label_info(cont_seg, styl_seg)
@@ -96,9 +98,13 @@ class PhotoWCT(nn.Module):
 
                 cont_indi = torch.LongTensor(cont_mask[0])
                 styl_indi = torch.LongTensor(styl_mask[0])
+                '''
                 if self.is_cuda:
                     cont_indi = cont_indi.cuda(0)
                     styl_indi = styl_indi.cuda(0)
+                '''
+                cont_indi = cont_indi.to(self.device)
+                styl_indi = styl_indi.to(self.device)
 
                 cFFG = torch.index_select(cont_feat_view, 1, cont_indi)
                 sFFG = torch.index_select(styl_feat_view, 1, styl_indi)
@@ -126,8 +132,11 @@ class PhotoWCT(nn.Module):
         cont_feat = cont_feat - c_mean
         
         iden = torch.eye(cFSize[0])  # .double()
+        '''
         if self.is_cuda:
             iden = iden.cuda()
+        '''
+        iden = iden.to(self.device)
         
         contentConv = torch.mm(cont_feat, cont_feat.t()).div(cFSize[1] - 1) + iden
         # del iden
@@ -162,10 +171,11 @@ class PhotoWCT(nn.Module):
         targetFeature = torch.mm(torch.mm(torch.mm(s_v[:, 0:k_s], torch.diag(s_d)), (s_v[:, 0:k_s].t())), whiten_cF)
         targetFeature = targetFeature + s_mean.unsqueeze(1).expand_as(targetFeature)
         return targetFeature
-    
+    '''
     @property
     def is_cuda(self):
         return next(self.parameters()).is_cuda
+    '''
 
     def forward(self, *input):
         pass

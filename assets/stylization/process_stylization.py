@@ -6,7 +6,6 @@ from __future__ import print_function
 import time
 import numpy as np
 from PIL import Image, ImageFile
-from torch.autograd import Variable
 import torchvision.transforms as transforms
 import torchvision.utils as utils
 import torch.nn as nn
@@ -140,6 +139,8 @@ def stylization(stylization_module, smoothing_module, content_image_path, style_
 
 
 def stylization_m(stylization_module, smoothing_module, content_image_path, style_image_path):
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
     # Load image
     with torch.no_grad():
         cont_img = Image.open(content_image_path).convert('RGB')
@@ -156,9 +157,9 @@ def stylization_m(stylization_module, smoothing_module, content_image_path, styl
         cont_img = transforms.ToTensor()(cont_img).unsqueeze(0)
         styl_img = transforms.ToTensor()(styl_img).unsqueeze(0)
 
-        cont_img = cont_img.cuda(1)
-        styl_img = styl_img.cuda(1)
-        stylization_module.cuda(1)
+        cont_img = cont_img.to(device)
+        styl_img = styl_img.to(device)
+        stylization_module.to(device)
 
         cont_seg = np.asarray(cont_seg)
         styl_seg = np.asarray(styl_seg)

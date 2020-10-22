@@ -158,8 +158,9 @@ class CAPSModel():
 
         save_path = os.path.join(ckpt_folder, "{:06d}.pth".format(step))
         print('saving ckpts {}...'.format(save_path))
+        model_state = self.model.get_network().module.state_dict() if self.args.multi_gpu else self.model.get_network()
         torch.save({'step': step,
-                    'state_dict': self.model.get_network().module.state_dict() if self.args.multi_gpu else self.model.get_network(),
+                    'state_dict': model_state,
                     'optimizer':  self.optimizer.state_dict(),
                     'scheduler': self.scheduler.state_dict(),
                     },

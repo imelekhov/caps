@@ -2,23 +2,30 @@ import os
 from os import path as osp
 import random
 import torch
+import torch.nn as nn
 from assets.stylization.process_stylization import stylization_m
 from assets.stylization.photo_wct import PhotoWCT
 from assets.stylization.photo_gif import GIFSmoothing
 
 
 class Stylizer(object):
-    def __init__(self, styles_path):
-        self.styles_path = styles_path
-        self.styles = [osp.join(styles_path, img) for img in os.listdir(styles_path)]
+    def __init__(self, sargs):
+        self.styles = [osp.join(sargs.styledir, img) for img in os.listdir(sargs.styledir)]
 
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.p_wct = PhotoWCT()
-        self.p_wct.load_state_dict(torch.load("photo_wct.pth"))
+        self.dir_path = osp.dirname(osp.realpath(__file__))
+        self.p_wct.load_state_dict(torch.load(osp.join(self.dir_path, "photo_wct.pth")))
+
+        if sargs.multi_gpu:
+            print("Use multiple GPUs")
+            self.p_wct = nn.DataParallel(self.p_wct)
+
         self.p_pro = GIFSmoothing(r=35, eps=0.001)
-        self.p_wct.cuda(1)
+        self.p_wct.to(device)
 
     def forward(self, content_fname):
         # randomly pick the style
-        style_fname = random.choice(self.styles, 1)[0]
+        style_fname = random.choice(self.styles)
         stylized_img = stylization_m(self.p_wct, self.p_pro, content_fname, style_fname)
         return stylized_img

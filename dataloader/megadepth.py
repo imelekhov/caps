@@ -10,6 +10,7 @@ import collections
 from tqdm import tqdm
 import dataloader.data_utils as data_utils
 from assets.stylization.stylizer import Stylizer
+#torch.multiprocessing.set_start_method('spawn')
 
 
 rand = np.random.RandomState(234)
@@ -48,7 +49,7 @@ class MegaDepth(Dataset):
         self.n_imgs = {"train": 2000,
                        "test": 500}
 
-        self.stylizer = Stylizer(self.args.styledir) if self.args.use_stylization else None
+        self.stylizer = Stylizer(self.args) if self.args.use_stylization else None
 
         self.phase = phase
         if self.phase == 'train':
