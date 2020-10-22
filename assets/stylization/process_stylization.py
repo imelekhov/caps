@@ -11,7 +11,7 @@ import torchvision.transforms as transforms
 import torchvision.utils as utils
 import torch.nn as nn
 import torch
-from smooth_filter import smooth_filter
+from assets.stylization.smooth_filter import smooth_filter
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 

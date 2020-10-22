@@ -9,6 +9,7 @@ import utils
 import collections
 from tqdm import tqdm
 import dataloader.data_utils as data_utils
+from assets.stylization.stylizer import Stylizer
 
 
 rand = np.random.RandomState(234)
@@ -46,6 +47,8 @@ class MegaDepth(Dataset):
 
         self.n_imgs = {"train": 2000,
                        "test": 500}
+
+        self.stylizer = Stylizer(self.args.styledir) if self.args.use_stylization else None
 
         self.phase = phase
         if self.phase == 'train':
@@ -155,6 +158,13 @@ class MegaDepth(Dataset):
         im2_meta = self.images[imf2]
         im1 = io.imread(imf1)
         im2 = io.imread(imf2)
+        if self.args.use_stylization:
+            if np.random.randint(2, size=1)[0]:
+                print("Let's stylized the second image")
+                print("orig.: ", im2.shape)
+                im2 = self.stylizer.forward(imf2)
+                print("stylized: ", im2.shape)
+
         h, w = im1.shape[:2]
 
         intrinsic1 = self.get_intrinsics(im1_meta)
