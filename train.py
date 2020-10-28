@@ -61,6 +61,7 @@ def train_megadepth(args):
             '''
             model.save_model(step)
 
+
 if __name__ == '__main__':
     args = config.get_args()
     train_megadepth(args)
