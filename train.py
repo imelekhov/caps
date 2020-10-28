@@ -5,6 +5,7 @@ from CAPS.caps_model import CAPSModel
 from dataloader.megadepth import MegaDepthLoader
 # from utils import cycle
 from tqdm import tqdm
+from multiprocessing import set_start_method
 import torch
 import torch.nn as nn
 
@@ -90,4 +91,10 @@ def train_megadepth(args):
 
 if __name__ == '__main__':
     args = config.get_args()
+    '''
+    try:
+        set_start_method('spawn')
+    except RuntimeError:
+        pass
+    '''
     train_megadepth(args)

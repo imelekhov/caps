@@ -9,8 +9,6 @@ import utils
 import collections
 from tqdm import tqdm
 import dataloader.data_utils as data_utils
-from assets.stylization.stylizer import Stylizer
-#torch.multiprocessing.set_start_method('spawn')
 
 
 rand = np.random.RandomState(234)
@@ -49,9 +47,11 @@ class MegaDepth(Dataset):
         self.n_imgs = {"train": 2000,
                        "test": 500}
 
-        self.stylizer = Stylizer(self.args) if self.args.use_stylization else None
+        # self.stylizer = Stylizer(self.args) if self.args.use_stylization else None
 
         self.phase = phase
+        self.transform = self.get_augmentation(self.phase == "train")
+        '''
         if self.phase == 'train':
             # augment during training
             self.transform = transforms.Compose([transforms.ToPILImage(),
@@ -66,6 +66,7 @@ class MegaDepth(Dataset):
                                                  transforms.Normalize(mean=(0.485, 0.456, 0.406),
                                                                       std=(0.229, 0.224, 0.225)),
                                                  ])
+        '''
         self.root = os.path.join(args.datadir, self.phase)
         self.images = self.read_img_cam()
         self.imf1s, self.imf2s = self.read_pairs()
@@ -75,6 +76,23 @@ class MegaDepth(Dataset):
         rand.shuffle(index)
         self.imf1s = list(np.array(self.imf1s)[index])
         self.imf2s = list(np.array(self.imf2s)[index])
+
+    @staticmethod
+    def get_augmentation(train=True):
+        transform = transforms.Compose([transforms.ToTensor(),
+                                        transforms.Normalize(mean=(0.485, 0.456, 0.406),
+                                                             std=(0.229, 0.224, 0.225)),
+                                       ])
+        if train:
+            transform = transforms.Compose([transforms.ToPILImage(),
+                                            transforms.ColorJitter
+                                            (brightness=1, contrast=1, saturation=1, hue=0.4),
+                                            transforms.ToTensor(),
+                                            transforms.Normalize(mean=(0.485, 0.456, 0.406),
+                                                                 std=(0.229, 0.224, 0.225)),
+                                          ])
+
+        return transform
 
     def read_img_cam(self):
         images = {}
@@ -159,9 +177,11 @@ class MegaDepth(Dataset):
         im2_meta = self.images[imf2]
         im1 = io.imread(imf1)
         im2 = io.imread(imf2)
+        '''
         if self.args.use_stylization:
             if np.random.randint(2, size=1)[0]:
                 im2 = np.asarray(self.stylizer.forward(imf2)).copy()
+        '''
 
         h, w = im1.shape[:2]
 
@@ -212,6 +232,10 @@ class MegaDepth(Dataset):
         intrinsic1 = torch.from_numpy(intrinsic1).float()
         intrinsic2 = torch.from_numpy(intrinsic2).float()
         pose = torch.from_numpy(relative[:3, :]).float()
+        '''
+        im1_tensor = self.transform(im1)
+        im2_tensor = self.transform(im2)
+        '''
         im1_tensor = self.transform(im1)
         im2_tensor = self.transform(im2)
 
@@ -223,7 +247,9 @@ class MegaDepth(Dataset):
                'F': F_gt,
                'intrinsic1': intrinsic1,
                'intrinsic2': intrinsic2,
-               'coord1': coord1}
+               'coord1': coord1,
+               'imf_for_stylization': imf2,
+               'phase': self.phase}
 
         return out
 

@@ -139,7 +139,44 @@ def stylization(stylization_module, smoothing_module, content_image_path, style_
 
 
 def stylization_m(stylization_module, smoothing_module, content_image_path, style_image_path):
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    # Load image
+    with torch.no_grad():
+        cont_img = Image.open(content_image_path).convert('RGB')
+        styl_img = Image.open(style_image_path).convert('RGB')
+
+        new_cw, new_ch = memory_limit_image_resize(cont_img)
+        new_sw, new_sh = memory_limit_image_resize(styl_img)
+        cont_pilimg = cont_img.copy()
+        cw = cont_pilimg.width
+        ch = cont_pilimg.height
+        cont_seg = []
+        styl_seg = []
+
+        cont_img = transforms.ToTensor()(cont_img).unsqueeze(0)
+        styl_img = transforms.ToTensor()(styl_img).unsqueeze(0)
+
+        cont_img = cont_img.to(device)
+        styl_img = styl_img.to(device)
+        stylization_module.to(device)
+
+        cont_seg = np.asarray(cont_seg)
+        styl_seg = np.asarray(styl_seg)
+
+        stylized_img = stylization_module.transform(cont_img, styl_img, cont_seg, styl_seg)
+        if ch != new_ch or cw != new_cw:
+            stylized_img = nn.functional.upsample(stylized_img, size=(ch, cw), mode='bilinear')
+        grid = utils.make_grid(stylized_img.data, nrow=1, padding=0)
+        ndarr = grid.mul(255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
+        out_img = Image.fromarray(ndarr)
+        out_img = smoothing_module.process(out_img, cont_pilimg)
+
+        return out_img
+
+
+def stylization_batch(stylization_module, smoothing_module, content_image_path, style_image_path):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # Load image
     with torch.no_grad():

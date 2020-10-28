@@ -8,6 +8,8 @@ import utils
 import torchvision.utils as vutils
 from CAPS.criterion import CtoFCriterion
 from CAPS.network import CAPSNet
+from assets.stylization.stylizer import Stylizer
+from dataloader.megadepth import MegaDepth
 
 
 class CAPSModel():
@@ -31,9 +33,19 @@ class CAPSModel():
         # define loss function
         self.criterion = CtoFCriterion(args).to(self.device)
 
+        self.stylizer = Stylizer(self.args) if self.args.use_stylization else None
+
     def set_input(self, data):
         self.im1 = data['im1'].to(self.device)
         self.im2 = data['im2'].to(self.device)
+
+        if self.args.use_stylization:
+            # self.im2 = data['im2'].to(self.device)
+
+            for i, fname in enumerate(data['imf_for_stylization']):
+                transform = MegaDepth.get_augmentation(data['phase'] == "train")
+                if np.random.randint(2, size=1)[0]:
+                    self.im2[i] = transform(np.asarray(self.stylizer.forward(fname)).copy())
 
         self.coord1 = data['coord1'].to(self.device)
         self.fmatrix = data['F'].cuda()
@@ -41,8 +53,11 @@ class CAPSModel():
         self.intrinsic1 = data['intrinsic1'].to(self.device)
         self.intrinsic2 = data['intrinsic2'].to(self.device)
 
+        '''
         self.im1_ori = data['im1_ori']
         self.im2_ori = data['im2_ori']
+        '''
+
         self.batch_size = len(self.im1)
         self.imsize = self.im1.size()[2:]
 
@@ -92,7 +107,7 @@ class CAPSModel():
             writer.add_scalar('epipolar_loss_fine', self.eloss_f.item(), n_iter)
             writer.add_scalar('cycle_loss_coarse', self.closs_c.item(), n_iter)
             writer.add_scalar('cycle_loss_fine', self.closs_f.item(), n_iter)
-
+        '''
         # write image
         if n_iter % self.args.log_img_interval == 0:
             # this visualization shows a number of query points in the first image,
@@ -112,6 +127,7 @@ class CAPSModel():
             vis = torch.from_numpy(vis.transpose(2, 0, 1)).float().unsqueeze(0)
             x = vutils.make_grid(vis, normalize=True)
             writer.add_image('Image', x, n_iter)
+        '''
 
     def load_model(self, filename):
         to_load = torch.load(filename)
