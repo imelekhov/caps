@@ -58,6 +58,8 @@ def train_megadepth(args):
                 val_total_loss = val_loss
                 print("%s | Step: %d, Loss: %2.5f" % ("val_caps", step, val_total_loss))
 
+            writer.add_scalar('val:total_loss', val_loss, step)
+
 
 if __name__ == '__main__':
     args = config.get_args()

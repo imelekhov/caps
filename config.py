@@ -38,6 +38,9 @@ def get_args():
                         help='decay learning rate by a factor every specified number of steps')
     parser.add_argument("--lrate_decay_factor", type=float, default=0.5,
                         help='decay learning rate by a factor every specified number of steps')
+    # multinomial sampling in the coarse level
+    parser.add_argument('--use_mn', type=int, default=0, help='use multinomial distribution to sample correspondences')
+    parser.add_argument('--mn_prob_threshold', type=int, default=15, help='threshold for multinomial sampling')
 
     ## model options
     parser.add_argument('--backbone', type=str, default='resnet50',
@@ -71,9 +74,10 @@ def get_args():
                              'do not add the epipolar loss')
 
     ## logging options
-    parser.add_argument('--log_scalar_interval', type=int, default=50, help='print interval')
-    parser.add_argument('--log_img_interval', type=int, default=500, help='log image interval')
+    parser.add_argument('--log_scalar_interval', type=int, default=500, help='print interval')
+    parser.add_argument('--log_img_interval', type=int, default=1000, help='log image interval')
     parser.add_argument("--save_interval", type=int, default=20000, help='frequency of weight ckpt saving')
+    # parser.add_argument("--save_interval", type=int, default=50, help='frequency of weight ckpt saving')
 
     ## eval options
     parser.add_argument('--extract_img_dir',
@@ -82,7 +86,7 @@ def get_args():
                         help='the directory of images to extract features')
     parser.add_argument('--extract_out_dir',
                         type=str,
-                        default="./out_eval/orig_multi_gpu",
+                        default="./out_eval",
                         help='the directory of images to extract features')
 
     args = parser.parse_known_args()[0]

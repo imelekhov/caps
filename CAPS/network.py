@@ -13,9 +13,13 @@ class CAPSNet(nn.Module):
                            encoder=args.backbone,
                            coarse_out_ch=args.coarse_feat_dim,
                            fine_out_ch=args.fine_feat_dim).to(self.device)
-        if args.multi_gpu:
+        if self.args.multi_gpu:
             print("Use multiple GPUs")
             self.net = nn.DataParallel(self.net)
+
+        if self.args.use_mn:
+            print("Use Multinomial sampling")
+            self.mn_threshold = args.mn_prob_threshold / 100.
 
     def get_network(self):
         return self.net
@@ -114,6 +118,24 @@ class CAPSNet(nn.Module):
         coord2_n = self.normalize(coord2, h, w)
         return coord2_n
 
+    def get_nn_multinomial(self, feat1, featmap2):
+        '''
+        sample the coordinates of potential match from multinomial distribution (eps-greedy policy)
+        :param feat1: query features, [batch_size, n_pts, n_dim]
+        :param featmap2: the feature maps of the other image
+        :return: normalized correspondence locations [batch_size, n_pts, 2]
+        '''
+        _, n_pts, _ = feat1.shape
+        batch_size, d, h, w = featmap2.shape
+        feat2_flatten = featmap2.reshape(batch_size, d, h * w).transpose(1, 2)  # Bx(hw)xd
+
+        prob = self.compute_prob(feat1, feat2_flatten)
+        ind2_nn = torch.multinomial(prob.view(batch_size * n_pts, -1), 1).view(batch_size, n_pts)
+
+        coord2 = self.ind2coord(ind2_nn, w)
+        coord2_n = self.normalize(coord2, h, w)
+        return coord2_n
+
     def get_expected_correspondence_locs(self, feat1, featmap2, with_std=False):
         '''
         compute the expected correspondence locations
@@ -183,8 +205,17 @@ class CAPSNet(nn.Module):
         feat1_coarse = self.sample_feat_by_coord(xc1, coord1_n)  # Bxnxd
         coord2_ec_n, std_c = self.get_expected_correspondence_locs(feat1_coarse, xc2, with_std=True)
 
+        # self.get_1nn_coord(feat1_coarse, xc2) if self.args.use_nn else coord2_ec_n
+
         # the center locations  of the local window for fine level computation
-        coord2_ec_n_ = self.get_1nn_coord(feat1_coarse, xc2) if self.args.use_nn else coord2_ec_n
+        if self.args.use_mn:
+            if torch.rand(1).item() < self.args.mn_threshold:
+                coord2_ec_n_ = self.get_nn_multinomial(feat1_coarse, xc2)
+            else:
+                coord2_ec_n_ = self.get_1nn_coord(feat1_coarse, xc2)
+        else:
+            coord2_ec_n_ = self.get_1nn_coord(feat1_coarse, xc2) if self.args.use_nn else coord2_ec_n
+
         feat1_fine = self.sample_feat_by_coord(xf1, coord1_n)  # Bxnxd
         coord2_ef_n, std_f = self.get_expected_correspondence_within_window(feat1_fine, xf2,
                                                                             coord2_ec_n_, with_std=True)

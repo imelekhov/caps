@@ -72,10 +72,10 @@ class CAPSModel():
         with torch.no_grad():
             self.forward()
             loss = self.criterion(self.coord1, self.out, self.fmatrix, self.pose, self.imsize)
-            loss_total, _, _, _, _, _ = loss
+            total_loss, _, _, _, _, _ = loss
 
         self.model.train(True)
-        return loss_total.item()
+        return total_loss.item()
 
     def extract_features(self, im, coord):
         self.model.eval()
