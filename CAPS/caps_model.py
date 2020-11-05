@@ -3,14 +3,16 @@ import cv2
 import numpy as np
 import torch
 from torch import optim
-from torch.autograd import Variable
+import random
 import utils
 import torchvision.utils as vutils
 from CAPS.criterion import CtoFCriterion
 from CAPS.network import CAPSNet
+from assets.stylization.stylizer import Stylizer
+from dataloader.megadepth import MegaDepth
 
 
-class CAPSModel():
+class CAPSModel(object):
 
     def name(self):
         return 'CAPS Model'
@@ -31,9 +33,29 @@ class CAPSModel():
         # define loss function
         self.criterion = CtoFCriterion(args).to(self.device)
 
-    def set_input(self, data):
+        self.stylizer = Stylizer(self.args) if self.args.use_stylization else None
+
+    def set_input(self, data, phase='train'):
         self.im1 = data['im1'].to(self.device)
         self.im2 = data['im2'].to(self.device)
+        self.im2_ori = data['im2_ori']
+
+        if self.args.use_stylization:
+            transform = MegaDepth.get_transform(phase)
+            idx = random.choice(range(len(data['im2_fname'])))
+
+            fname = data['im2_fname'][idx]
+            style_im = self.stylizer.forward(fname)
+            self.im2_ori[idx] = torch.from_numpy(style_im)
+            self.im2[idx] = transform(style_im).to(self.device)
+
+            '''
+            for i, fname in enumerate(data['im2_fname']):
+                if np.random.randint(2, size=1)[0]:
+                    style_im = self.stylizer.forward(fname)
+                    self.im2_ori[i] = torch.from_numpy(style_im)
+                    self.im2[i] = transform(style_im).to(self.device)
+            '''
 
         self.coord1 = data['coord1'].to(self.device)
         self.fmatrix = data['F'].cuda()
@@ -42,7 +64,6 @@ class CAPSModel():
         self.intrinsic2 = data['intrinsic2'].to(self.device)
 
         self.im1_ori = data['im1_ori']
-        self.im2_ori = data['im2_ori']
         self.batch_size = len(self.im1)
         self.imsize = self.im1.size()[2:]
 

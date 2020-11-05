@@ -39,21 +39,21 @@ class Timer:
 
 def memory_limit_image_resize(cont_img):
     # prevent too small or too big images
-    MINSIZE=256
-    MAXSIZE=960
+    MINSIZE = 256
+    MAXSIZE = 960
     orig_width = cont_img.width
     orig_height = cont_img.height
-    if max(cont_img.width,cont_img.height) < MINSIZE:
+    if max(cont_img.width, cont_img.height) < MINSIZE:
         if cont_img.width > cont_img.height:
             cont_img.thumbnail((int(cont_img.width*1.0/cont_img.height*MINSIZE), MINSIZE), Image.BICUBIC)
         else:
             cont_img.thumbnail((MINSIZE, int(cont_img.height*1.0/cont_img.width*MINSIZE)), Image.BICUBIC)
-    if min(cont_img.width,cont_img.height) > MAXSIZE:
+    if min(cont_img.width, cont_img.height) > MAXSIZE:
         if cont_img.width > cont_img.height:
             cont_img.thumbnail((MAXSIZE, int(cont_img.height*1.0/cont_img.width*MAXSIZE)), Image.BICUBIC)
         else:
             cont_img.thumbnail(((int(cont_img.width*1.0/cont_img.height*MAXSIZE), MAXSIZE)), Image.BICUBIC)
-    print("Resize image: (%d,%d)->(%d,%d)" % (orig_width, orig_height, cont_img.width, cont_img.height))
+    # print("Resize image: (%d,%d)->(%d,%d)" % (orig_width, orig_height, cont_img.width, cont_img.height))
     return cont_img.width, cont_img.height
 
 
@@ -140,6 +140,7 @@ def stylization(stylization_module, smoothing_module, content_image_path, style_
 
 def stylization_m(stylization_module, smoothing_module, content_image_path, style_image_path):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    # device = torch.device('cpu')
 
     # Load image
     with torch.no_grad():
@@ -171,5 +172,6 @@ def stylization_m(stylization_module, smoothing_module, content_image_path, styl
         ndarr = grid.mul(255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
         out_img = Image.fromarray(ndarr)
         out_img = smoothing_module.process(out_img, cont_pilimg)
+        out_img = np.array(out_img)
 
         return out_img

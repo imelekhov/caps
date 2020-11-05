@@ -5,6 +5,7 @@ from CAPS.caps_model import CAPSModel
 from dataloader.megadepth import MegaDepthLoader
 from utils import cycle
 from tqdm import tqdm
+import time
 import torch
 import torch.nn as nn
 
@@ -40,16 +41,20 @@ def train_megadepth(args):
 
     # training loop
     val_total_loss = 1e6
+    start_time = time.time()
     for step in range(start_step + 1, start_step + args.n_iters + 1):
         data = next(train_loader_iterator)
-        model.set_input(data)
+        model.set_input(data, 'train')
         model.optimize_parameters()
-        model.write_summary(writer, step)
+        if step % args.log_scalar_interval == 0:
+            model.write_summary(writer, step)
+            print('Elapsed time: ', time.time() - start_time)
+            sys.exit()
 
         if step % args.save_interval == 0 and step > 0:
             val_loss = 0.
             for test_sample in tqdm(test_loader):
-                model.set_input(test_sample)
+                model.set_input(test_sample, 'test')
                 val_loss += model.validate()
             val_loss /= len(test_loader)
 

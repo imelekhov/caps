@@ -8,7 +8,7 @@ def get_args():
     ## path options ./out/multi_gpu/000020.pth
     parser.add_argument('--datadir', type=str, help='the dataset directory')
     parser.add_argument('--styledir', type=str,
-                        default="/data/datasets/style_transfer_amos/styles_sub_10/night",
+                        default="/data/datasets/style_transfer_amos/styles_sub_10__960",
                         help='')
     parser.add_argument("--logdir", type=str, default='./logs/', help='dir of tensorboard logs')
     parser.add_argument("--outdir", type=str, default='./out/', help='dir of output e.g., ckpts')
@@ -23,7 +23,7 @@ def get_args():
     parser.add_argument('--n_iters', type=int, default=280000, help='max number of training iterations')
 
     # data options
-    parser.add_argument('--workers', type=int, help='number of data loading workers', default=4)
+    parser.add_argument('--workers', type=int, help='number of data loading workers', default=8)
     parser.add_argument('--num_pts', type=int, default=500, help='num of points trained in each pair')
     parser.add_argument('--train_kp', type=str, default='mixed', help='sift/random/mixed')
     parser.add_argument('--prune_kp', type=int, default=1, help='if prune non-matchable keypoints')

@@ -23,7 +23,8 @@ class PhotoWCT(nn.Module):
         self.d4 = VGGDecoder(4)
 
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    
+        # self.device = torch.device('cpu')
+
     def transform(self, cont_img, styl_img, cont_seg, styl_seg):
         self.__compute_label_info(cont_seg, styl_seg)
 

@@ -9,8 +9,6 @@ import utils
 import collections
 from tqdm import tqdm
 import dataloader.data_utils as data_utils
-from assets.stylization.stylizer import Stylizer
-#torch.multiprocessing.set_start_method('spawn')
 
 
 rand = np.random.RandomState(234)
@@ -49,23 +47,8 @@ class MegaDepth(Dataset):
         self.n_imgs = {"train": 2000,
                        "test": 500}
 
-        self.stylizer = Stylizer(self.args) if self.args.use_stylization else None
-
         self.phase = phase
-        if self.phase == 'train':
-            # augment during training
-            self.transform = transforms.Compose([transforms.ToPILImage(),
-                                                 transforms.ColorJitter
-                                                 (brightness=1, contrast=1, saturation=1, hue=0.4),
-                                                 transforms.ToTensor(),
-                                                 transforms.Normalize(mean=(0.485, 0.456, 0.406),
-                                                                      std=(0.229, 0.224, 0.225)),
-                                                 ])
-        else:
-            self.transform = transforms.Compose([transforms.ToTensor(),
-                                                 transforms.Normalize(mean=(0.485, 0.456, 0.406),
-                                                                      std=(0.229, 0.224, 0.225)),
-                                                 ])
+        self.transform = self.get_transform(phase)
         self.root = os.path.join(args.datadir, self.phase)
         self.images = self.read_img_cam()
         self.imf1s, self.imf2s = self.read_pairs()
@@ -138,6 +121,24 @@ class MegaDepth(Dataset):
         return imf1s, imf2s
 
     @staticmethod
+    def get_transform(phase):
+        if phase == 'train':
+            transform = transforms.Compose([transforms.ToPILImage(),
+                                            transforms.ColorJitter(brightness=1, contrast=1, saturation=1, hue=0.4),
+                                            transforms.ToTensor(),
+                                            transforms.Normalize(mean=(0.485, 0.456, 0.406),
+                                                                 std=(0.229, 0.224, 0.225)),
+                                            ])
+        elif phase == 'test':
+            transform = transforms.Compose([transforms.ToTensor(),
+                                            transforms.Normalize(mean=(0.485, 0.456, 0.406),
+                                                                 std=(0.229, 0.224, 0.225)),
+                                           ])
+        else:
+            raise ValueError('Check the phase (train/test)')
+        return transform
+
+    @staticmethod
     def get_intrinsics(im_meta):
         return np.array([[im_meta.fx, 0, im_meta.cx],
                          [0, im_meta.fy, im_meta.cy],
@@ -159,12 +160,11 @@ class MegaDepth(Dataset):
         im2_meta = self.images[imf2]
         im1 = io.imread(imf1)
         im2 = io.imread(imf2)
+        '''
         if self.args.use_stylization:
             if np.random.randint(2, size=1)[0]:
-                print("Let's stylized the second image")
-                print("orig.: ", im2.shape)
                 im2 = self.stylizer.forward(imf2)
-                print("stylized: ", im2.shape)
+        '''
 
         h, w = im1.shape[:2]
 
@@ -222,6 +222,7 @@ class MegaDepth(Dataset):
                'im2': im2_tensor,
                'im1_ori': im1_ori,
                'im2_ori': im2_ori,
+               'im2_fname': imf2,
                'pose': pose,
                'F': F_gt,
                'intrinsic1': intrinsic1,
