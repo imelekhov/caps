@@ -115,7 +115,10 @@ class CAPSModel():
 
     def load_model(self, filename):
         to_load = torch.load(filename)
-        self.model.get_network().load_state_dict(to_load['state_dict'])
+        if self.args.multi_gpu:
+            self.model.get_network().module.load_state_dict(to_load['state_dict'])
+        else:
+            self.model.get_network().load_state_dict(to_load['state_dict'])
         if 'optimizer' in to_load.keys():
             self.optimizer.load_state_dict(to_load['optimizer'])
         if 'scheduler' in to_load.keys():

@@ -68,11 +68,11 @@ def benchmark_features(sargs, read_feats):
     v_err = {thr: 0 for thr in rng}
 
     for seq_idx, seq_name in tqdm(enumerate(seq_names), total=len(seq_names)):
-        keypoints_a, descriptors_a = read_feats(sargs.extract_out_dir, seq_name, 1)
+        keypoints_a, descriptors_a = read_feats(osp.join(sargs.extract_out_dir, sargs.exp_name), seq_name, 1)
         n_feats.append(keypoints_a.shape[0])
 
         for im_idx in range(2, 7):
-            keypoints_b, descriptors_b = read_feats(sargs.extract_out_dir, seq_name, im_idx)
+            keypoints_b, descriptors_b = read_feats(osp.join(sargs.extract_out_dir, sargs.exp_name), seq_name, im_idx)
             n_feats.append(keypoints_b.shape[0])
 
             matches = mnn_matcher(
@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     model = CAPSModel(args)
 
-    outdir = args.extract_out_dir
+    outdir = osp.join(args.extract_out_dir, args.exp_name)
     os.makedirs(outdir, exist_ok=True)
 
     with torch.no_grad():
