@@ -20,6 +20,7 @@ class Stylizer(object):
         self.p_wct = PhotoWCT()
         self.dir_path = osp.dirname(osp.realpath(__file__))
         self.p_wct.load_state_dict(torch.load(osp.join(self.dir_path, "photo_wct.pth")))
+        self.fast = sargs.fast_stylization
 
         '''
         if sargs.multi_gpu:
@@ -33,5 +34,5 @@ class Stylizer(object):
     def forward(self, content_fname):
         # randomly pick the style
         style_fname = random.choice(self.styles)
-        stylized_img = stylization_m(self.p_wct, self.p_pro, content_fname, style_fname)
+        stylized_img = stylization_m(self.p_wct, self.p_pro, content_fname, style_fname, self.fast)
         return stylized_img

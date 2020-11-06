@@ -138,7 +138,7 @@ def stylization(stylization_module, smoothing_module, content_image_path, style_
             out_img.save(output_image_path)
 
 
-def stylization_m(stylization_module, smoothing_module, content_image_path, style_image_path):
+def stylization_m(stylization_module, smoothing_module, content_image_path, style_image_path, fast=True):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     # device = torch.device('cpu')
 
@@ -172,6 +172,8 @@ def stylization_m(stylization_module, smoothing_module, content_image_path, styl
         ndarr = grid.mul(255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
         out_img = Image.fromarray(ndarr)
         out_img = smoothing_module.process(out_img, cont_pilimg)
-        out_img = np.array(out_img)
+        if not fast:
+            out_img = smooth_filter(out_img, cont_pilimg, f_radius=15, f_edge=1e-1)
+        out_img_arr = np.array(out_img)
 
-        return out_img
+        return out_img_arr, out_img

@@ -59,6 +59,9 @@ class MegaDepth(Dataset):
         self.imf1s = list(np.array(self.imf1s)[index])
         self.imf2s = list(np.array(self.imf2s)[index])
 
+    def get_image_pairs(self):
+        return self.imf1s, self.imf2s
+
     def read_img_cam(self):
         images = {}
         Image = collections.namedtuple(
