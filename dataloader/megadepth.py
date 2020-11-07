@@ -1,8 +1,8 @@
 import torch
 from torch.utils.data import Dataset
 import os
+from os import path as osp
 import numpy as np
-import cv2
 import skimage.io as io
 import torchvision.transforms as transforms
 import utils
@@ -53,6 +53,16 @@ class MegaDepth(Dataset):
         self.images = self.read_img_cam()
         self.imf1s, self.imf2s = self.read_pairs()
         print('total number of image pairs loaded: {}'.format(len(self.imf1s)))
+
+        # stylization
+        if self.args.use_stylization:
+            if self.args.stylization_type == 'fast':
+                self.stylization_path = osp.join(self.args.datadir, 'stylization_fast')
+            elif self.args.stylization_type == 'accurate':
+                self.stylization_path = osp.join(self.args.datadir, 'stylization_accurate')
+            else:
+                raise ValueError('Check the stylization type')
+
         # shuffle data
         index = np.arange(len(self.imf1s))
         rand.shuffle(index)
@@ -162,12 +172,11 @@ class MegaDepth(Dataset):
         im1_meta = self.images[imf1]
         im2_meta = self.images[imf2]
         im1 = io.imread(imf1)
+
+        if self.args.use_stylization and np.random.randint(2, size=1)[0]:
+            imf2 = osp.join(self.stylization_path, imf2[len(self.args.datadir) + 1:])
+
         im2 = io.imread(imf2)
-        '''
-        if self.args.use_stylization:
-            if np.random.randint(2, size=1)[0]:
-                im2 = self.stylizer.forward(imf2)
-        '''
 
         h, w = im1.shape[:2]
 
@@ -225,7 +234,6 @@ class MegaDepth(Dataset):
                'im2': im2_tensor,
                'im1_ori': im1_ori,
                'im2_ori': im2_ori,
-               'im2_fname': imf2,
                'pose': pose,
                'F': F_gt,
                'intrinsic1': intrinsic1,
