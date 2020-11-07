@@ -34,5 +34,5 @@ class Stylizer(object):
     def forward(self, content_fname):
         # randomly pick the style
         style_fname = random.choice(self.styles)
-        stylized_img = stylization_m(self.p_wct, self.p_pro, content_fname, style_fname, self.fast)
-        return stylized_img
+        stylized_arr, stylized_img = stylization_m(self.p_wct, self.p_pro, content_fname, style_fname, self.fast)
+        return stylized_arr, stylized_img
