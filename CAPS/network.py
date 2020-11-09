@@ -209,7 +209,7 @@ class CAPSNet(nn.Module):
 
         # the center locations  of the local window for fine level computation
         if self.args.use_mn:
-            if torch.rand(1).item() < self.args.mn_threshold:
+            if torch.rand(1).item() < self.mn_threshold:
                 coord2_ec_n_ = self.get_nn_multinomial(feat1_coarse, xc2)
             else:
                 coord2_ec_n_ = self.get_1nn_coord(feat1_coarse, xc2)
