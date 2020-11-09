@@ -48,8 +48,6 @@ def train_megadepth(args):
         model.optimize_parameters()
         if step % args.log_scalar_interval == 0:
             model.write_summary(writer, step)
-            print('Elapsed time: ', time.time() - start_time)
-            sys.exit()
 
         if step % args.save_interval == 0 and step > 0:
             val_loss = 0.

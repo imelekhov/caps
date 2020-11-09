@@ -2,6 +2,7 @@ import argparse
 import os
 from os import path as osp
 from tqdm import tqdm
+from PIL import Image
 import torch
 from dataloader.megadepth import MegaDepth
 from assets.stylization.stylizer import Stylizer
@@ -18,6 +19,7 @@ if __name__ == '__main__':
     parser.add_argument('--fast_stylization', type=int, default=1, help='use the faster version')
 
     args = parser.parse_args()
+    args.use_stylization = 0
 
     dataset = MegaDepth(args, args.phase)
     stylizer = Stylizer(args)
@@ -28,6 +30,7 @@ if __name__ == '__main__':
     if not osp.isdir(out_path_home):
         os.makedirs(out_path_home)
 
+    n_failures = 0
     with torch.no_grad():
         for content_fname in tqdm(fnames2, desc='# Stylizing content images'):
             # let us define a destination folder
@@ -39,7 +42,12 @@ if __name__ == '__main__':
                 os.makedirs(out_path)
 
             if not osp.isfile(out_fname):
-                _, stylized_img = stylizer.forward(content_fname)
-                stylized_img.save(out_fname)
-
-    print("Done")
+                try:
+                    _, stylized_img = stylizer.forward(content_fname)
+                    stylized_img.save(out_fname)
+                except:
+                    print('some error. Exit')
+                    im = Image.open(content_fname).convert('RGB')
+                    im.save(out_fname)
+                    n_failures += 1
+    print("Number of failure images: ", n_failures, ". Done")

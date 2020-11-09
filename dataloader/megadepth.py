@@ -1,8 +1,8 @@
 import torch
 from torch.utils.data import Dataset
 import os
+from os import path as osp
 import numpy as np
-import cv2
 import skimage.io as io
 import torchvision.transforms as transforms
 import utils
@@ -53,11 +53,23 @@ class MegaDepth(Dataset):
         self.images = self.read_img_cam()
         self.imf1s, self.imf2s = self.read_pairs()
         print('total number of image pairs loaded: {}'.format(len(self.imf1s)))
+
+        # stylization
+        if self.args.use_stylization:
+            if self.args.stylization_type == 'fast':
+                self.stylization_path = osp.join(self.args.datadir, 'stylization_fast')
+            elif self.args.stylization_type == 'accurate':
+                self.stylization_path = osp.join(self.args.datadir, 'stylization_accurate')
+            else:
+                raise ValueError('Check the stylization type')
+
         # shuffle data
         index = np.arange(len(self.imf1s))
         rand.shuffle(index)
         self.imf1s = list(np.array(self.imf1s)[index])
         self.imf2s = list(np.array(self.imf2s)[index])
+        # stylization flags
+        self.is_stylized_frame = np.random.randint(2, size=len(self.imf1s))
 
     def get_image_pairs(self):
         return self.imf1s, self.imf2s
@@ -162,12 +174,13 @@ class MegaDepth(Dataset):
         im1_meta = self.images[imf1]
         im2_meta = self.images[imf2]
         im1 = io.imread(imf1)
+
+        if self.args.use_stylization and self.is_stylized_frame[item]:
+            imf2_s = osp.join(self.stylization_path, imf2[len(self.args.datadir) + 1:])
+            if osp.isfile(imf2_s):
+                imf2 = imf2_s
+
         im2 = io.imread(imf2)
-        '''
-        if self.args.use_stylization:
-            if np.random.randint(2, size=1)[0]:
-                im2 = self.stylizer.forward(imf2)
-        '''
 
         h, w = im1.shape[:2]
 
@@ -225,7 +238,6 @@ class MegaDepth(Dataset):
                'im2': im2_tensor,
                'im1_ori': im1_ori,
                'im2_ori': im2_ori,
-               'im2_fname': imf2,
                'pose': pose,
                'F': F_gt,
                'intrinsic1': intrinsic1,
